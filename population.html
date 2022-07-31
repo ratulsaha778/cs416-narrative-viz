@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<link rel="stylesheet" href="style.css">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.3.1/d3-annotation.min.js"></script>
+</head>
+<body>
+
+<h3 align=left>India At-a-Glance: how the Earth's fastest growing economy fairing against the world</h3>
+<p align=left>With 1.2 billion people and the world’s third-largest economy in purchasing power parity terms, India’s recent growth has been a significant achievement. Since independence in 1947, a landmark agricultural revolution has transformed the nation from chronic dependence on grain imports into an agricultural powerhouse that is now a net exporter of food.</p>
+<p align=left><i>Data Courtesy: All the information are shared by World Bank (<a href='https://data.worldbank.org/country/india'>https://data.worldbank.org/country/india</a>)</i></p>
+<div class="move">
+<center>
+<p>Use the navigation buttons below to explore different visualizations that showcase India's socio-economic factors compared againts the world.</p>
+<a href="index.html" class="otherpage">Home</a>
+<a href="life_exp.html" class="otherpage">Life Expectancy</a>
+<a href="#" class="currentpage">Population</a>
+<a href="gdp_capita.html" class="otherpage">GDP per Capita</a>
+<a href="gdp_growth.html" class="otherpage">GDP Growth %</a>
+<a href="conclusion.html" class="otherpage">Conclusion</a>
+</center> 
+</div>
+<hr>
+<div>
+<p>
+<b>Population growth (annual %))</b>
+<br>
+Annual population growth rate for year t is the exponential rate of growth of midyear population from year t-1 to t, expressed as a percentage . Population is based on the de facto definition of population, which counts all residents regardless of legal status or citizenship.
+</p>
+
+<svg width="960" height="700"></svg>
+  <script>
+
+    var svg = d3.select("svg"),
+      // smaller margin is the more height in texts 
+      margin = { top: 20, right: 20, bottom: 100, left: 40 },
+      width = +svg.attr("width") - margin.left - margin.right,
+      height = +svg.attr("height") - margin.top - margin.bottom;
+
+    var g = svg.append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("https://github.com/ratulsaha778/cs416-narrative-viz/blob/6142eaaa4aa80410c7eb5e6a37e9f11589bc64fd/life_exp.csv", function (error, data) {
+      if (error) throw error;
+
+
+      data.forEach(function (d) {
+        d.y2010 = + d.y2010;
+        // console.log(d.y2010);
+      });
+
+      var max = d3.max(data, function (d) { return d.y2010; });
+      // console.log("the max volume is:" + max)
+
+      var x = d3.scaleBand().rangeRound([0, width]).padding(0.3),
+        y = d3.scaleLinear().rangeRound([height, 0]);
+
+
+      x.domain(data.map(function (d) { return d.Location; }));
+      y.domain([0, d3.max(data, function (d) { return d.y2010; })]);
+
+
+
+      //X Axis 
+      g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("x", 20)
+        .attr("transform", "rotate(45)");
+
+      // console.log("we made it");
+      //Y Axis 
+      g.append("g")
+        // .attr("class", "axis axis--y")
+        .attr("transform", "translate(0, 0)")
+        .call(d3.axisLeft(y))
+
+    });
+
+</script>
+
+<br>
+<p><i>
+Source: Derived from total population. Population source: ( 1 ) United Nations Population Division. World Population Prospects: 2019 Revision, ( 2 ) Census reports and other statistical publications from national statistical offices, ( 3 ) Eurostat: Demographic Statistics, ( 4 ) United Nations Statistical Division. Population and Vital Statistics Reprot ( various years ), ( 5 ) U.S. Census Bureau: International Database, and ( 6 ) Secretariat of the Pacific Community: Statistics and Demography Programme.
+</i></p>
+</div>
+<hr>
+<div>
+<p align=center>Contact: ratuls2@illinois.edu</p>
+</div>
+
+</body>
+</html> 
