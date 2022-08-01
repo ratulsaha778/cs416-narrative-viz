@@ -24,63 +24,109 @@
 </center> 
 </div>
 <hr>
-<div>
+
 <p>
 <b>Life expectancy at birth, total (years)</b>
 <br>
 Life expectancy at birth indicates the number of years a newborn infant would live if prevailing patterns of mortality at the time of its birth were to stay the same throughout its life.
 </p>
 
-<svg width="960" height="700"></svg>
-  <script>
+<div id="my_dataviz"></div>
+<script>
 
-    var svg = d3.select("svg"),
-      // smaller margin is the more height in texts 
-      margin = { top: 20, right: 20, bottom: 100, left: 40 },
-      width = +svg.attr("width") - margin.left - margin.right,
-      height = +svg.attr("height") - margin.top - margin.bottom;
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 30, left: 60},
+    width = 660 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-    var g = svg.append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.csv("https://github.com/ratulsaha778/cs416-narrative-viz/blob/6142eaaa4aa80410c7eb5e6a37e9f11589bc64fd/life_exp.csv", function (error, data) {
-      if (error) throw error;
+//Read the data
+d3.csv("https://raw.githubusercontent.com/ratulsaha778/cs416-narrative-viz/main/life_exp.csv", function(data) {
 
+  // group the data: I want to draw one line per group
+  var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
+    .key(function(d) { return d.Location;})
+    .entries(data);
 
-      data.forEach(function (d) {
-        d.y2010 = + d.y2010;
-        // console.log(d.y2010);
-      });
+  // Add X axis --> it is a date format
+  var x = d3.scaleLinear()
+    .domain(d3.extent(data, function(d) { return d.Year; }))
+    .range([ 0, width ]);
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x).ticks(10).tickFormat(d3.format("d")))
+	;
 
-      var max = d3.max(data, function (d) { return d.y2010; });
-      // console.log("the max volume is:" + max)
+  // Add Y axis
+  var y = d3.scaleLinear()
+    .domain([50, d3.max(data, function(d) { return +d.Life_Exp; })])
+    .range([ height, 0 ]);
+  svg.append("g")
+    .call(d3.axisLeft(y).ticks(10));
+		
+  // color palette
+  var res = sumstat.map(function(d){ return d.key }) // list of group names
+  var color = d3.scaleOrdinal()
+    .domain(res)
+    .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
 
-      var x = d3.scaleBand().rangeRound([0, width]).padding(0.3),
-        y = d3.scaleLinear().rangeRound([height, 0]);
+  var tooltip = d3.select("body").append("div").attr("class", "toolTip");
+	
+  // Draw the line
+  svg.selectAll(".line")
+      .data(sumstat)
+      .enter()
+      .append("path")
+        .attr("fill", "none")
+        .attr("stroke", function(d){ return color(d.key) })
+		.attr("stroke-dasharray", function(d,i){ return i })
+        .attr("stroke-width", 2.5)
+        .attr("d", function(d){
+          return d3.line()
+            .x(function(d) { return x(d.Year); })
+            .y(function(d) { return y(+d.Life_Exp); })
+            (d.values)
+        })
+	  .on("mousemove", function (d) {
+        tooltip
+          .style("left", d3.event.pageX - 50 + "px")
+          .style("top", d3.event.pageY - 70 + "px")
+          .style("display", "inline-block")
+		  .style("font-family", "Georgia")
+		  .style("font-size", "70%")
+          .html(d.Location + ": Year " + (d.Year) + ": " + (d.Life_Exp));
+        })
+		.on("mouseout", function (d) { tooltip.style("display", "none"); })
+		;
+		
+  //Legend
+  const colDict = {India: '#e41a1c', World: '#377eb8' , Germany: '#4daf4a', United_Kingdom: '#984ea3', United_States: '#ff7f00'}
+  var legend_keys = ["India", "World", "Germany", "United_Kingdom", "United_States"]
 
+	var lineLegend = svg.selectAll(".lineLegend").data(legend_keys)
+		.enter().append("g")
+		.attr("class","lineLegend")
+		.attr("transform", function (d,i) {
+				return "translate(" + width + "," + (i*20)+")";
+			});
 
-      x.domain(data.map(function (d) { return d.Location; }));
-      y.domain([0, d3.max(data, function (d) { return d.y2010; })]);
+	lineLegend.append("text").text(function (d) {return d;})
+		.attr("transform", "translate(-200,250)"); //align texts with boxes
 
-
-
-      //X Axis 
-      g.append("g")
-        .attr("class", "axis axis--x")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x))
-        .selectAll("text")
-        .attr("x", 20)
-        .attr("transform", "rotate(45)");
-
-      // console.log("we made it");
-      //Y Axis 
-      g.append("g")
-        // .attr("class", "axis axis--y")
-        .attr("transform", "translate(0, 0)")
-        .call(d3.axisLeft(y))
-
-    });
+	lineLegend.append("rect")
+		//.attr("fill", function (d) {return color(d.key); })
+		.attr("fill", d => colDict[d])
+		.attr("transform", "translate(-220,240)")
+		.attr("width", 10).attr("height", 10);
+})
 
 </script>
 
@@ -88,7 +134,7 @@ Life expectancy at birth indicates the number of years a newborn infant would li
 <p><i>
 Source: ( 1 ) United Nations Population Division. World Population Prospects: 2019 Revision, or derived from male and female life expectancy at birth from sources such as: ( 2 ) Census reports and other statistical publications from national statistical offices, ( 3 ) Eurostat: Demographic Statistics, ( 4 ) United Nations Statistical Division. Population and Vital Statistics Reprot ( various years ), ( 5 ) U.S. Census Bureau: International Database, and ( 6 ) Secretariat of the Pacific Community: Statistics and Demography Program.
 </i></p>
-</div>
+
 <hr>
 <div>
 <p align=center>Contact: ratuls2@illinois.edu</p>
