@@ -65,7 +65,7 @@ d3.csv("https://raw.githubusercontent.com/ratulsaha778/cs416-narrative-viz/main/
 
   // Add Y axis
   var y = d3.scaleLinear()
-    .domain([50, d3.max(data, function(d) { return +d.Pop_Growth; })])
+    .domain([-3, 1+d3.max(data, function(d) { return +d.Pop_Growth; })])
     .range([ height, 0 ]);
   svg.append("g")
     .call(d3.axisLeft(y).ticks(10));
