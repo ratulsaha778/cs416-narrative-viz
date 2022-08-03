@@ -32,6 +32,7 @@ Life expectancy at birth indicates the number of years a newborn infant would li
 </p>
 
 <div id="my_dataviz"></div>
+<div id="tooltip" opacity=0></div>
 <script>
 
 // set the dimensions and margins of the graph
@@ -55,6 +56,8 @@ d3.csv("https://raw.githubusercontent.com/ratulsaha778/cs416-narrative-viz/main/
   var sumstat = d3.nest() // nest function allows to group the calculation per level of a factor
     .key(function(d) { return d.Location;})
     .entries(data);
+  //document.getElementById("data").innerHTML = sumstat;
+  //console.log(sumstat);
 
   // Add X axis --> it is a date format
   var x = d3.scaleLinear()
@@ -74,12 +77,16 @@ d3.csv("https://raw.githubusercontent.com/ratulsaha778/cs416-narrative-viz/main/
 		
   // color palette
   var res = sumstat.map(function(d){ return d.key }) // list of group names
+  //console.log(res);
   var color = d3.scaleOrdinal()
     .domain(res)
     .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
 
   var tooltip = d3.select("body").append("div").attr("class", "toolTip");
-	
+  //var tooltip1 = d3.select('svg').select('#tooltip').attr("class", "toolTip");
+  //console.log(tooltip);
+  //console.log(tooltip1);
+
   // Draw the line
   svg.selectAll(".line")
       .data(sumstat)
@@ -95,14 +102,16 @@ d3.csv("https://raw.githubusercontent.com/ratulsaha778/cs416-narrative-viz/main/
             .y(function(d) { return y(+d.Life_Exp); })
             (d.values)
         })
-	  .on("mousemove", function (d) {
+	  .on("mouseover", function (d,i) {
         tooltip
           .style("left", d3.event.pageX - 50 + "px")
           .style("top", d3.event.pageY - 70 + "px")
           .style("display", "inline-block")
 		  .style("font-family", "Georgia")
 		  .style("font-size", "70%")
-          .html(d.Location + ": Year " + (d.Year) + ": " + (d.Life_Exp));
+          .html(d.key + ": Year " + d.values[i]['Year'] + ": " + d.values[i]['Life_Exp']);
+		  //console.log(d.values);
+		  //console.log(d.values[i]);
         })
 		.on("mouseout", function (d) { tooltip.style("display", "none"); })
 		;

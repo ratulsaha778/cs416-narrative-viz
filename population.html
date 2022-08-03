@@ -31,6 +31,7 @@ Annual population growth rate for year t is the exponential rate of growth of mi
 </p>
 
 <div id="my_dataviz"></div>
+<div id="tooltip" opacity=0></div>
 <script>
 // set the dimensions and margins of the graph
 var margin = {top: 10, right: 30, bottom: 30, left: 60},
@@ -93,14 +94,16 @@ d3.csv("https://raw.githubusercontent.com/ratulsaha778/cs416-narrative-viz/main/
             .y(function(d) { return y(+d.Pop_Growth); })
             (d.values)
         })
-	  .on("mousemove", function (d) {
+	  .on("mouseover", function (d,i) {
         tooltip
           .style("left", d3.event.pageX - 50 + "px")
           .style("top", d3.event.pageY - 70 + "px")
           .style("display", "inline-block")
 		  .style("font-family", "Georgia")
 		  .style("font-size", "70%")
-          .html(d.Location + ": Year " + (d.Year) + ": " + (d.Pop_Growth));
+          //.html(d.Location + ": Year " + (d.Year) + ": " + (d.Pop_Growth))
+		  .html(d.key + ": Year " + d.values[i]['Year'] + ": " + d.values[i]['Pop_Growth'])
+		  ;
         })
 		.on("mouseout", function (d) { tooltip.style("display", "none"); })
 		;

@@ -32,6 +32,7 @@ Annual percentage growth rate of GDP at market prices based on constant local cu
 </p>
 
 <div id="my_dataviz"></div>
+<div id="tooltip" opacity=0></div>
 <script>
 
 // set the dimensions and margins of the graph
@@ -95,14 +96,16 @@ d3.csv("https://raw.githubusercontent.com/ratulsaha778/cs416-narrative-viz/main/
             .y(function(d) { return y(+d.GDP_Growth); })
             (d.values)
         })
-	  .on("mousemove", function (d) {
+	  .on("mousemove", function (d,i) {
         tooltip
           .style("left", d3.event.pageX - 50 + "px")
           .style("top", d3.event.pageY - 70 + "px")
           .style("display", "inline-block")
 		  .style("font-family", "Georgia")
 		  .style("font-size", "70%")
-          .html(d.Location + ": Year " + (d.Year) + ": " + (d.GDP_Growth));
+          //.html(d.Location + ": Year " + (d.Year) + ": " + (d.GDP_Growth))
+		  .html(d.key + ": Year " + d.values[i]['Year'] + ": " + d.values[i]['GDP_Growth'])
+		  ;
         })
 		.on("mouseout", function (d) { tooltip.style("display", "none"); })
 		;
